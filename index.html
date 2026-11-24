@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Sector Log — HCM → LogTen</title>
+<meta name="apple-mobile-web-app-title" content="Logbook &amp; Importer">
+<title>Logbook &amp; Importer — HCM → LogTen</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -107,7 +108,7 @@
 </head>
 <body>
 <header>
-  <h1>Sector Log<small>HeliCrew Manager → LogTen</small></h1>
+  <h1>Logbook &amp; Importer<small>HeliCrew Manager → LogTen</small></h1>
   <div class="build" id="buildStamp"></div>
   <div class="hbtns">
     <button class="quiet" onclick="openMapping()">Field map</button>
@@ -228,7 +229,7 @@
 const BUILD = { n:17, date:"2026-11-24" };
 const LS = { map:"sl_mapping3", alias:"sl_aliases", imported:"sl_imported", cal:"sl_calibrated", aircraft:"sl_aircraft", excluded:"sl_excluded", usersites:"sl_usersites" };
 const SELF_NAME = "Edward Worsley";
-const APP_META = { application:"Sector Log", version:"1.0", serviceID:"uk.worsley.sectorlog",
+const APP_META = { application:"Logbook & Importer", version:"1.0", serviceID:"uk.worsley.sectorlog", /* serviceID is an identity: never change */
                    dateFormat:"MM/dd/yyyy", dateAndTimeFormat:"MM/dd/yyyy HH:mm", timesAreZulu:true };
 const AW169_REGS = { "G-KSST":"AW169","G-KSSC":"AW169","G-LNAC":"AW169","G-MGPS":"AW169" };
 const TRAINING_RX = /\b(OPC|LPC|TRAINING|RECURRENT|LOFT|CX FLIGHT|ATPL)\b/i;
@@ -836,7 +837,7 @@ function markCalibrated(){ calibrated=true; localStorage.setItem(LS.cal,"1"); re
 /* ================= backup / restore ================= */
 // Backs up the raw localStorage strings for every LS key (nothing else is persisted). Values are
 // copied verbatim so storage formats never change; import validates then writes them back.
-const BACKUP_TAG = "sector-log-backup";
+const BACKUP_TAG = "sector-log-backup";   // format tag, never changes (old backups must import)
 function buildBackup(){
   const data={};
   for(const k of Object.values(LS)){ const v=localStorage.getItem(k); if(v!==null) data[k]=v; }
@@ -854,7 +855,7 @@ async function bkCopy(){
   catch(e){ ta.focus(); ta.select(); bkMsg("Select-all done — use Copy from the iOS menu."); }
 }
 async function bkShare(){
-  const text=document.getElementById("bkOut").value, name="sector-log-backup.json";
+  const text=document.getElementById("bkOut").value, name="logbook-importer-backup.json";
   try{
     const f=new File([text],name,{type:"application/json"});
     if(navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:name}); return; }
@@ -871,7 +872,7 @@ function bkFile(inp){
 function bkImport(){
   let o;
   try{ o=JSON.parse(document.getElementById("bkIn").value.trim()); }catch(e){ return bkMsg("That isn't a valid backup (not JSON)."); }
-  if(!o||o.app!==BACKUP_TAG||!o.data||typeof o.data!=="object") return bkMsg("That isn't a Sector Log / Logbook & Importer backup.");
+  if(!o||o.app!==BACKUP_TAG||!o.data||typeof o.data!=="object") return bkMsg("That isn't a Logbook & Importer backup.");
   const valid=new Set(Object.values(LS)), entries=Object.entries(o.data);
   if(entries.some(([k])=>!valid.has(k))) return bkMsg("Backup contains unknown keys — not imported.");
   for(const [k,v] of entries){
