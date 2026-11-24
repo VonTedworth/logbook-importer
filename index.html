@@ -112,6 +112,7 @@
   <div class="hbtns">
     <button class="quiet" onclick="openMapping()">Field map</button>
     <button class="quiet" onclick="openAliases()">Places</button>
+    <button class="quiet" onclick="openBackup()">Backup</button>
   </div>
 </header>
 <main>
@@ -161,6 +162,27 @@
   </div>
 </div></div>
 
+<!-- Backup modal -->
+<div class="modal" id="backupModal"><div class="mbox">
+  <h3>Backup &amp; restore</h3>
+  <p>Everything this app remembers on this device — places you added, aliases, aircraft, excluded regs, imported-sector keys and the field map — as one block of text. Use it to move to a new address or device, whose storage starts empty. No flight data is included.</p>
+  <h3 style="margin-top:12px">Export</h3>
+  <textarea id="bkOut" readonly rows="5" style="width:100%;font-family:var(--mono);font-size:11px" onfocus="this.select()"></textarea>
+  <div class="rowbtns">
+    <button onclick="bkCopy()">Copy</button>
+    <button class="quiet" onclick="bkShare()">Share / save file</button>
+  </div>
+  <div id="bkMsg" style="font-size:13px;color:var(--ink-soft);min-height:18px"></div>
+  <h3 style="margin-top:12px">Import</h3>
+  <p>Paste a backup below, or choose the file. Importing <b>replaces</b> the matching settings on this device, then reloads.</p>
+  <textarea id="bkIn" rows="4" placeholder="Paste backup text here" style="width:100%;font-family:var(--mono);font-size:11px"></textarea>
+  <div class="rowbtns">
+    <label class="quiet" style="cursor:pointer;padding:8px 12px;border:1px solid var(--line);border-radius:8px">Choose file<input type="file" accept=".json,application/json,text/plain" style="display:none" onchange="bkFile(this)"></label>
+    <button class="primary" onclick="bkImport()">Import &amp; reload</button>
+    <button class="quiet" onclick="document.getElementById('backupModal').classList.remove('open')">Close</button>
+  </div>
+</div></div>
+
 <!-- Alias modal -->
 <div class="modal" id="aliasModal"><div class="mbox">
   <h3>Place names</h3>
@@ -203,7 +225,7 @@
 "use strict";
 /* ================= configuration & persistence ================= */
 // Build stamp — bump BUILD.n and set BUILD.date on every commit so the running version is verifiable.
-const BUILD = { n:16, date:"2026-07-18" };
+const BUILD = { n:17, date:"2026-11-24" };
 const LS = { map:"sl_mapping3", alias:"sl_aliases", imported:"sl_imported", cal:"sl_calibrated", aircraft:"sl_aircraft", excluded:"sl_excluded", usersites:"sl_usersites" };
 const SELF_NAME = "Edward Worsley";
 const APP_META = { application:"Sector Log", version:"1.0", serviceID:"uk.worsley.sectorlog",
@@ -810,6 +832,57 @@ function deleteCalibration(){
   location.href="logten://v2/modifyEntities?package="+encodeURIComponent(JSON.stringify(pkg));
 }
 function markCalibrated(){ calibrated=true; localStorage.setItem(LS.cal,"1"); render(); }
+
+/* ================= backup / restore ================= */
+// Backs up the raw localStorage strings for every LS key (nothing else is persisted). Values are
+// copied verbatim so storage formats never change; import validates then writes them back.
+const BACKUP_TAG = "sector-log-backup";
+function buildBackup(){
+  const data={};
+  for(const k of Object.values(LS)){ const v=localStorage.getItem(k); if(v!==null) data[k]=v; }
+  return JSON.stringify({ app:BACKUP_TAG, build:BUILD.n, exported:new Date().toISOString(), data }, null, 1);
+}
+function openBackup(){
+  document.getElementById("bkOut").value=buildBackup();
+  document.getElementById("bkIn").value=""; document.getElementById("bkMsg").textContent="";
+  document.getElementById("backupModal").classList.add("open");
+}
+function bkMsg(t){ document.getElementById("bkMsg").textContent=t; }
+async function bkCopy(){
+  const ta=document.getElementById("bkOut");
+  try{ await navigator.clipboard.writeText(ta.value); bkMsg("Copied."); }
+  catch(e){ ta.focus(); ta.select(); bkMsg("Select-all done — use Copy from the iOS menu."); }
+}
+async function bkShare(){
+  const text=document.getElementById("bkOut").value, name="sector-log-backup.json";
+  try{
+    const f=new File([text],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:name}); return; }
+  }catch(e){ if(e&&e.name==="AbortError") return; }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+  a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  bkMsg("If nothing was saved, use Copy instead.");
+}
+function bkFile(inp){
+  const f=inp.files&&inp.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>{ document.getElementById("bkIn").value=String(r.result); bkMsg("File loaded — tap Import & reload."); }; r.readAsText(f);
+  inp.value="";
+}
+function bkImport(){
+  let o;
+  try{ o=JSON.parse(document.getElementById("bkIn").value.trim()); }catch(e){ return bkMsg("That isn't a valid backup (not JSON)."); }
+  if(!o||o.app!==BACKUP_TAG||!o.data||typeof o.data!=="object") return bkMsg("That isn't a Sector Log / Logbook & Importer backup.");
+  const valid=new Set(Object.values(LS)), entries=Object.entries(o.data);
+  if(entries.some(([k])=>!valid.has(k))) return bkMsg("Backup contains unknown keys — not imported.");
+  for(const [k,v] of entries){
+    if(typeof v!=="string") return bkMsg("Backup is malformed — not imported.");
+    if(k!==LS.cal){ try{ JSON.parse(v); }catch(e){ return bkMsg("Backup value for "+k+" is corrupt — not imported."); } }
+  }
+  if(!entries.length) return bkMsg("Backup is empty — nothing to import.");
+  if(!confirm("Replace "+entries.length+" saved setting(s) on this device with the backup?")) return;
+  for(const [k,v] of entries) localStorage.setItem(k,v);
+  location.reload();
+}
 
 /* ================= mapping & alias modals ================= */
 function openMapping(){

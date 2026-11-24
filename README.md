@@ -2,7 +2,7 @@
 
 Single-page web app. Upload both HCM exports (Excel + LogTen CSV) from the same date range, review the derived sectors, resolve anything flagged, tap Send — LogTen opens and asks to import. Deployed to GitHub Pages at **https://vontedworth.github.io/sector-log/**. Works offline after first load except for the two CDN libraries (PapaParse, SheetJS).
 
-**Current build: 16** (shown top of the page as `build N · date`). Bump the `BUILD` constant in `index.html` on every commit so the running version is verifiable on the device.
+**Current build: 17** (shown top of the page as `build N · date`). Bump the `BUILD` constant in `index.html` on every commit so the running version is verifiable on the device.
 
 The app **only references LogTen places by name and writes grids into remarks** — it never creates or modifies places or aircraft in LogTen, and never sends coordinates.
 
@@ -65,6 +65,10 @@ LogTen's API addresses custom fields by slot number, not display name. The shipp
 3. Set the slots in Field map, save, **Mark calibrated**, then **Delete calibration flight**.
 
 Until calibrated (`Mark calibrated` not yet tapped) an amber banner warns that custom values may land in the wrong fields.
+
+## Backup & restore
+
+The header **Backup** button exports everything the app keeps on the device (all `sl_*` storage: user sites, aliases, aircraft, excluded regs, imported-sector keys, field map, calibrated flag) as one JSON block — copy it, or share/save it as a file. **Import** validates a pasted block or chosen file (known keys only, every value parseable) and then replaces the matching settings and reloads. No flight data is included. Use it before moving to a new address or device, whose storage starts empty.
 
 ## Not yet built
 
