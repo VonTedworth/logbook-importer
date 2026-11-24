@@ -6,8 +6,7 @@ Live: https://vontedworth.github.io/logbook-importer/ (GitHub Pages, legacy buil
 Repo: `VonTedworth/logbook-importer` (renamed from `sector-log` on 2026-11-24). User-facing detail: `README.md`.
 
 ## Status
-- Build **17** is the last pushed build (adds the Backup button). The rename and this setup are committed locally
-  but **not pushed**; `/wrap` pushes and bumps to build 18.
+- Build **18** (rename + setup) is pushed; nothing unpushed. Build 17 added the Backup button.
 - No automated tests. Verify by loading the page (`python3 -m http.server`, any port) and checking the build stamp
   on the device after deploy.
 
@@ -32,7 +31,7 @@ Repo: `VonTedworth/logbook-importer` (renamed from `sector-log` on 2026-11-24). 
 
 ## Recent
 - **2026-11-24 build 17**: Backup button (export/import all `sl_*` settings as JSON, validated, replace + reload).
-- **2026-11-24 rename + setup (unpushed)**: app renamed "Logbook & Importer" (title, header, apple-mobile-web-app-title,
+- **2026-11-24 build 18, rename + setup**: app renamed "Logbook & Importer" (title, header, apple-mobile-web-app-title,
   `APP_META.application`, README); repo renamed to `logbook-importer` via `gh`, local `origin` updated, Pages URL
   followed automatically (no deploy workflow, nothing else to change). The old `.../sector-log/` address no longer
   serves. Added `.gitignore` (`.DS_Store`, `.claude/settings.local.json`), this file, `CLAUDE.md`, and the `/wrap`
@@ -40,7 +39,7 @@ Repo: `VonTedworth/logbook-importer` (renamed from `sector-log` on 2026-11-24). 
   from the `apple-mobile-web-app-title` meta when re-added.
 
 ## Next up
-- Run `/wrap` to bump to build 18 and push the rename + setup.
-- After the push: on the iPhone, open the new address, Backup -> Import the saved text, then re-add to Home Screen.
+- On the iPhone: confirm the new address shows build 18 and "Logbook & Importer", Backup -> Import the saved text
+  (if not already done), then re-add to Home Screen so the icon takes the new name.
 - Confirm `flight_paxCount` lands in LogTen's Total Pax on first real import (attribute name uncalibrated).
 - Not built: own-logbook file output (JSON/CSV to iCloud) and the CAA-format print page (see README).

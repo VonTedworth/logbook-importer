@@ -2,7 +2,7 @@
 
 Single-page web app. Upload both HCM exports (Excel + LogTen CSV) from the same date range, review the derived sectors, resolve anything flagged, tap Send — LogTen opens and asks to import. Deployed to GitHub Pages at **https://vontedworth.github.io/logbook-importer/**. Works offline after first load except for the two CDN libraries (PapaParse, SheetJS).
 
-**Current build: 17** (formerly "Sector Log"; renamed after build 17 — storage keys, backup format tag and the LogTen `serviceID` deliberately keep their old `sl_` / `sectorlog` names) (shown top of the page as `build N · date`). Bump the `BUILD` constant in `index.html` on every commit so the running version is verifiable on the device.
+**Current build: 18** (formerly "Sector Log"; renamed in build 18 — storage keys, backup format tag and the LogTen `serviceID` deliberately keep their old `sl_` / `sectorlog` names) (shown top of the page as `build N · date`). Bump the `BUILD` constant in `index.html` on every commit so the running version is verifiable on the device.
 
 The app **only references LogTen places by name and writes grids into remarks** — it never creates or modifies places or aircraft in LogTen, and never sends coordinates.
 
